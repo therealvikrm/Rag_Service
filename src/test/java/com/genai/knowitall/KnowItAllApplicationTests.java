@@ -1,13 +1,13 @@
-package com.genai.rag;
+package com.genai.knowitall;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RagApplicationTests {
+class KnowItAllApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }

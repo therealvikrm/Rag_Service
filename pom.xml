@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.genai</groupId>
-	<artifactId>rag</artifactId>
+	<artifactId>knowitall</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>rag</name>
-	<description>RAG and VectorDB Implementation</description>
+	<name>knowItAll</name>
+	<description>AI-powered document search app</description>
 	<url/>
 	<licenses>
 		<license/>
