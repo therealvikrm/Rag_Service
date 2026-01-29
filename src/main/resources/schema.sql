@@ -1,52 +1,52 @@
 -- =====================================================
--- KnowItAll Database Schema
+-- KnowItAll Database Schema (H2 Compatible)
 -- Initialized automatically on application startup
 -- =====================================================
 
 -- Documents Table
 -- Stores metadata about uploaded documents
 CREATE TABLE IF NOT EXISTS documents (
-    id VARCHAR(36) PRIMARY KEY COMMENT 'UUID of the document',
-    title VARCHAR(255) NOT NULL COMMENT 'User-friendly title',
-    filename VARCHAR(255) NOT NULL COMMENT 'Original uploaded filename',
-    description LONGTEXT COMMENT 'Brief description of document',
-    uploaded_at TIMESTAMP NOT NULL COMMENT 'When document was uploaded',
-    owner VARCHAR(255) NOT NULL COMMENT 'Email/UserID of uploader',
-    status VARCHAR(20) NOT NULL COMMENT 'UPLOADING, PROCESSING, READY, FAILED',
-    total_chunks INT NOT NULL DEFAULT 0 COMMENT 'Number of chunks document was split into',
-    file_size_bytes BIGINT COMMENT 'File size in bytes',
-    error_message LONGTEXT COMMENT 'Error message if processing failed',
-    processed_at TIMESTAMP COMMENT 'When processing completed',
+    id VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    description CLOB,
+    uploaded_at TIMESTAMP NOT NULL,
+    owner VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    total_chunks INT NOT NULL DEFAULT 0,
+    file_size_bytes BIGINT,
+    error_message CLOB,
+    processed_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-    KEY idx_owner (owner) COMMENT 'For filtering documents by owner',
-    KEY idx_status (status) COMMENT 'For filtering by processing status',
-    KEY idx_uploaded_at (uploaded_at) COMMENT 'For sorting by upload date'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Stores metadata for uploaded documents';
+-- Create indexes for documents table
+CREATE INDEX IF NOT EXISTS idx_owner ON documents(owner);
+CREATE INDEX IF NOT EXISTS idx_status ON documents(status);
+CREATE INDEX IF NOT EXISTS idx_uploaded_at ON documents(uploaded_at);
 
 -- Document Chunks Table
 -- Stores individual chunks of documents with their embeddings
 CREATE TABLE IF NOT EXISTS document_chunks (
-    id VARCHAR(36) PRIMARY KEY COMMENT 'UUID of chunk',
-    document_id VARCHAR(36) NOT NULL COMMENT 'Foreign key to documents table',
-    content LONGTEXT NOT NULL COMMENT 'Text content of chunk',
-    chunk_index INT NOT NULL COMMENT 'Sequential index of chunk (0-based)',
-    vector_id VARCHAR(255) COMMENT 'ID of vector in Qdrant',
-    metadata JSON COMMENT 'JSON metadata: {page, section, offset, etc}',
-    token_count INT COMMENT 'Number of tokens in chunk',
+    id VARCHAR(36) PRIMARY KEY,
+    document_id VARCHAR(36) NOT NULL,
+    content CLOB NOT NULL,
+    chunk_index INT NOT NULL,
+    vector_id VARCHAR(255),
+    metadata JSON,
+    token_count INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_document_chunks_document
-        FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+        FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+);
 
-    KEY idx_document_id (document_id) COMMENT 'For fetching chunks by document',
-    KEY idx_vector_id (vector_id) COMMENT 'For tracking vectors in store',
-    KEY idx_chunk_index (document_id, chunk_index) COMMENT 'For ordering chunks'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Stores document chunks with vector references';
+-- Create indexes for document_chunks table
+CREATE INDEX IF NOT EXISTS idx_document_id ON document_chunks(document_id);
+CREATE INDEX IF NOT EXISTS idx_vector_id ON document_chunks(vector_id);
+CREATE INDEX IF NOT EXISTS idx_chunk_index ON document_chunks(document_id, chunk_index);
 
 -- =====================================================
 -- Performance Indexes Summary
