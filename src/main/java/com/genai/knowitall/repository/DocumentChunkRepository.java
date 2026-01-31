@@ -29,6 +29,12 @@ public interface DocumentChunkRepository extends JpaRepository<DocumentChunk, St
     Optional<DocumentChunk> findByVectorId(String vectorId);
 
     /**
+     * Count chunks that have been successfully embedded (have vectorId set)
+     * Used to track processing progress
+     */
+    long countByDocumentIdAndVectorIdIsNotNull(String documentId);
+
+    /**
      * Find all chunks for a document with a specific vector ID status
      * (useful for tracking which chunks have been embedded)
      */

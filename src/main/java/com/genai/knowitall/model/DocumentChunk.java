@@ -54,6 +54,14 @@ public class DocumentChunk {
     private String vectorId;
 
     /**
+     * Name of the embedding model used to generate the vector
+     * Example: "text-embedding-3-small", "text-embedding-3-large"
+     * Useful for tracking and migration when switching models
+     */
+    @Column(name = "embedding_model")
+    private String embeddingModel;
+
+    /**
      * JSON metadata for this chunk
      * Can contain: page_number, section_title, original_position, etc.
      * Example: {"page": 1, "section": "Introduction", "char_offset": 1024}
