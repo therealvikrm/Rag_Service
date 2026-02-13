@@ -32,6 +32,7 @@ public class EmbeddingService {
     private final long retryBackoffMs;
 
     public EmbeddingService(
+            @Value("${openai.api.key:}") String apiKey,
             @Value("${openai.embedding.model:text-embedding-3-small}") String modelName,
             @Value("${doc.embedding.retry.max-attempts:3}") int maxRetries,
             @Value("${doc.embedding.retry.backoff-ms:1000}") long retryBackoffMs) {
@@ -43,10 +44,9 @@ public class EmbeddingService {
         logger.info("Initializing EmbeddingService with model: " + modelName);
 
         try {
-            String apiKey = System.getenv("OPEN_AI_KEY");
-
-            if(apiKey == null || apiKey.isEmpty()) {
-                throw new IllegalStateException("OPEN_AI_KEY environment variable is not set");
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new IllegalStateException(
+                    "OpenAI API key is not set. Set OPEN_AI_KEY or OPENAI_API_KEY environment variable, or openai.api.key in configuration.");
             }
 
             this.embeddingModel = OpenAiEmbeddingModel.builder()

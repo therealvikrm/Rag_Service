@@ -112,8 +112,31 @@ public class TextExtractionService {
             return extractFromPdf(inputStream, filename);
         } else if (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
             return extractFromDocx(inputStream, filename);
+        } else if (contentType.equals("text/plain")) {
+            return extractFromText(inputStream, filename);
         } else {
             throw new TextExtractionException("Unsupported content type: " + contentType + " for file: " + filename);
+        }
+    }
+
+    /**
+     * Extract text from a plain text file (for testing).
+     */
+    private String extractFromText(InputStream inputStream, String filename) {
+        logger.info("Extracting text from plain text file: " + filename);
+        try {
+            byte[] bytes = inputStream.readAllBytes();
+            String text = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+
+            if (text.trim().isEmpty()) {
+                throw new TextExtractionException("Text file is empty: " + filename);
+            }
+
+            logger.info("Successfully extracted " + text.length() + " characters from text file: " + filename);
+            return text;
+        } catch (IOException e) {
+            logger.severe("Failed to read text file: " + filename + " - " + e.getMessage());
+            throw new TextExtractionException("Failed to read text file: " + filename, e);
         }
     }
 }

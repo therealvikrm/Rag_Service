@@ -49,6 +49,11 @@ public class DocumentChunkingService {
             throw new ChunkingException("Cannot chunk empty text", documentId);
         }
 
+        // Safety check: prevent chunking extremely large documents
+        if (text.length() > 10_000_000) { // 10MB limit
+            throw new ChunkingException("Document too large for chunking: " + text.length() + " chars (max 10MB)", documentId);
+        }
+
         try {
             List<DocumentChunk> chunks = new ArrayList<>();
 
@@ -58,9 +63,13 @@ public class DocumentChunkingService {
 
             int startIndex = 0;
             int chunkIndex = 0;
+            int safetyCounter = 0;
+            int maxChunks = (text.length() / chunkSizeChars) + 10; // Safety limit
 
             // Loop to create chunks.
-            while (startIndex < text.length()) {
+            while (startIndex < text.length() && safetyCounter < maxChunks) {
+                safetyCounter++;
+
                 // Calculate end index for this chunk
                 int endIndex = Math.min(startIndex + chunkSizeChars, text.length());
 
@@ -68,12 +77,17 @@ public class DocumentChunkingService {
                 if (endIndex < text.length()) {
                     int sentenceBreak = findSentenceBreak(text, endIndex, startIndex + chunkSizeChars / 2);
                     if (sentenceBreak > startIndex) {
-                        endIndex = sentenceBreak;
+                        endIndex = sentenceBreak; //1996,
                     }
                 }
 
-                // Extract chunk text
-                String chunkText = text.substring(startIndex, endIndex).trim();
+                // Extract chunk text - avoid trim() to prevent memory issues
+                String chunkText = text.substring(startIndex, endIndex);
+
+                // Only trim if chunk is small enough to be safe
+                if (chunkText.length() < 10000) {
+                    chunkText = chunkText.trim();
+                }
 
                 if (!chunkText.isEmpty()) {
                     DocumentChunk chunk = DocumentChunk.builder()
@@ -88,12 +102,13 @@ public class DocumentChunkingService {
                     chunkIndex++;
                 }
 
-                // Move start index forward with overlap consideration for next chunk
-                startIndex = endIndex - overlapChars;
+                // Move to next chunk position
+                // Always move forward by at least chunkSizeChars - overlapChars
+                int moveForward = Math.max(chunkSizeChars - overlapChars, 1);
+                startIndex = startIndex + moveForward;
 
-                // Ensure we make progress
-                if (startIndex <= 0 || startIndex >= text.length()) {
-                    logger.warning("No progress in chunking, breaking loop to avoid infinite loop.");
+                // Safety check: ensure we're making progress
+                if (startIndex >= text.length()) {
                     break;
                 }
             }
