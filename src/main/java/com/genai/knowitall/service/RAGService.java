@@ -162,7 +162,7 @@ public class RAGService {
 
     /**
      * Build context string from retrieved chunks.
-     * Concatenates chunk content with metadata markers.
+     * It is done by concatenating chunk contents, prefixed with metadata (document ID, chunk index, similarity).
      *
      * @param searchResults Retrieved chunks sorted by relevance
      * @return Formatted context for LLM
@@ -236,7 +236,6 @@ public class RAGService {
 
     /**
      * Generate answer using LLM, constrained to retrieved context.
-     *
      * @param question User's question
      * @param context Retrieved context from documents
      * @param isGrounded Whether context meets confidence threshold

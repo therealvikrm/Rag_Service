@@ -71,6 +71,7 @@ public class LLMProvider {
 
     /**
      * Generate a response from the LLM.
+     * It is done by sending a user message (the question) to the model, along with a system prompt (instructions for behavior).
      *
      * @param systemPrompt System message (instructions for behavior)
      * @param userMessage User's question or prompt
